@@ -1,0 +1,904 @@
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080a0f;
+  --panel:#0d1117;
+  --card:#111620;
+  --border:#1e2535;
+  --border2:#2a3449;
+  --text:#d4dbe8;
+  --muted:#4a5568;
+  --cyan:#00f0ff;
+  --cyan2:rgba(0,240,255,0.12);
+  --green:#39ff6e;
+  --green2:rgba(57,255,110,0.1);
+  --amber:#ffb830;
+  --amber2:rgba(255,184,48,0.1);
+  --red:#ff3f5a;
+  --red2:rgba(255,63,90,0.1);
+  --purple:#c77dff;
+  --purple2:rgba(199,125,255,0.1);
+}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;flex-direction:column;
+}
+
+/* ─── SCANLINE BG ─── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,240,255,0.015) 2px,rgba(0,240,255,0.015) 3px);
+  pointer-events:none;z-index:0;
+}
+
+/* ─── HEADER ─── */
+header{
+  position:relative;z-index:100;
+  height:52px;background:rgba(8,10,15,0.98);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;flex-shrink:0;
+  backdrop-filter:blur(20px);
+}
+.logo{
+  font-size:1.3rem;font-weight:700;letter-spacing:0.15em;
+  color:var(--cyan);text-shadow:0 0 20px rgba(0,240,255,0.5);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-sub{font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;font-weight:400;}
+.hdr-stats{
+  display:flex;gap:20px;align-items:center;
+  font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--muted);
+}
+.hdr-stat{display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+.hdr-stat-val{color:var(--cyan);font-size:0.85rem;}
+.hdr-btn{
+  padding:6px 16px;border-radius:4px;
+  border:1px solid var(--cyan);color:var(--cyan);
+  background:transparent;font-family:'Rajdhani',sans-serif;
+  font-size:0.8rem;font-weight:600;letter-spacing:0.08em;
+  cursor:pointer;transition:all 0.2s;
+}
+.hdr-btn:hover{background:var(--cyan2);}
+
+/* ─── MAIN ─── */
+main{
+  display:grid;
+  grid-template-columns:320px 1fr 300px;
+  flex:1;overflow:hidden;position:relative;z-index:1;
+}
+
+/* ─── LEFT PANEL ─── */
+.left{
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;background:var(--panel);
+}
+.left-head{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:0.65rem;font-weight:700;letter-spacing:0.14em;
+  color:var(--muted);text-transform:uppercase;flex-shrink:0;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.left-tabs{
+  display:flex;border-bottom:1px solid var(--border);flex-shrink:0;
+  overflow-x:auto;scrollbar-width:none;
+}
+.left-tabs::-webkit-scrollbar{display:none;}
+.tab{
+  padding:9px 12px;font-size:0.72rem;font-weight:600;
+  letter-spacing:0.06em;white-space:nowrap;
+  cursor:pointer;border-bottom:2px solid transparent;
+  color:var(--muted);transition:all 0.2s;flex-shrink:0;
+}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.tab:hover{color:var(--text);}
+
+.comp-list{flex:1;overflow-y:auto;padding:10px;}
+.comp-list::-webkit-scrollbar{width:3px;}
+.comp-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ─── COMPONENT CARD ─── */
+.comp-item{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:0;
+  margin-bottom:6px;
+  cursor:pointer;
+  transition:all 0.2s;
+  overflow:hidden;
+}
+.comp-item:hover{border-color:var(--border2);transform:translateX(2px);}
+.comp-item.selected{border-color:var(--sel-c, var(--cyan));background:rgba(0,240,255,0.04);}
+.comp-item.selected .comp-sel-bar{opacity:1;}
+
+.comp-sel-bar{
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--sel-c,var(--cyan));opacity:0;transition:opacity 0.2s;
+}
+
+.comp-inner{display:flex;align-items:center;gap:10px;padding:10px 10px 10px 13px;}
+
+/* Visual component illustration */
+.comp-vis{
+  width:52px;height:52px;border-radius:6px;
+  flex-shrink:0;position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+/* CPU chip illustration */
+.vis-cpu{
+  background:linear-gradient(135deg,#1a2040,#0d1428);
+  display:flex;align-items:center;justify-content:center;
+}
+.vis-cpu::before{
+  content:'';position:absolute;inset:6px;
+  background:linear-gradient(135deg,#252d50,#151c38);
+  border-radius:2px;border:1px solid rgba(100,140,255,0.3);
+}
+.vis-cpu::after{
+  content:'';position:absolute;inset:11px;
+  background:linear-gradient(135deg,#1e2848,#0f1730);
+  border-radius:1px;
+  box-shadow:0 0 8px rgba(80,100,255,0.3);
+}
+.cpu-pins{position:absolute;inset:0;pointer-events:none;}
+.cpu-pin{
+  position:absolute;background:rgba(180,200,255,0.5);
+  border-radius:1px;
+}
+
+/* Battery illustration */
+.vis-bat{
+  background:linear-gradient(135deg,#0d2010,#081508);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:2px;
+}
+.bat-cell{
+  width:36px;height:6px;border-radius:2px;
+  background:linear-gradient(90deg,#1a4a28,#0f2d18);
+  border:1px solid rgba(57,255,110,0.2);
+  position:relative;overflow:hidden;
+}
+.bat-cell::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  background:rgba(57,255,110,0.4);border-radius:1px;
+  transition:width 0.4s;
+}
+.bat-tip{width:6px;height:4px;border-radius:0 1px 1px 0;background:rgba(57,255,110,0.3);align-self:center;margin-left:auto;margin-right:4px;}
+
+/* Camera illustration */
+.vis-cam{
+  background:linear-gradient(135deg,#1a1030,#0d0820);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:3px;
+}
+.cam-ring{
+  border-radius:50%;border:2px solid rgba(199,125,255,0.4);
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,#080c18,#040610);
+}
+.cam-iris{
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#1a1040,#050810);
+  box-shadow:inset 0 0 8px rgba(199,125,255,0.2);
+}
+.cam-shine{
+  position:absolute;width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,0.3);top:28%;left:28%;
+}
+
+/* Display illustration */
+.vis-dsp{
+  background:linear-gradient(135deg,#0d1520,#080e18);
+  border:none;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.dsp-screen{
+  position:absolute;inset:4px;border-radius:3px;
+  background:linear-gradient(135deg,#0a1830,#051020);
+  border:1px solid rgba(0,240,255,0.15);
+  overflow:hidden;
+}
+.dsp-pixel-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,240,255,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,240,255,0.05) 1px,transparent 1px);
+  background-size:4px 4px;
+}
+.dsp-notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:14px;height:4px;background:#050a12;border-radius:0 0 4px 4px;
+}
+
+/* Speaker illustration */
+.vis-spk{
+  background:linear-gradient(135deg,#1a1000,#0d0a00);
+  display:flex;align-items:center;justify-content:center;
+  gap:2px;
+}
+.spk-bar{
+  width:4px;border-radius:2px;
+  background:linear-gradient(to top,rgba(255,184,48,0.6),rgba(255,184,48,0.2));
+}
+
+/* Charging illustration */
+.vis-chg{
+  background:linear-gradient(135deg,#101828,#080f1a);
+  display:flex;align-items:center;justify-content:center;
+}
+.chg-coil{
+  width:34px;height:34px;border-radius:50%;
+  border:2px solid rgba(0,240,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.chg-coil::before{
+  content:'';position:absolute;inset:4px;border-radius:50%;
+  border:1.5px solid rgba(0,240,255,0.15);
+}
+.chg-bolt{font-size:12px;position:relative;z-index:1;}
+
+.comp-info{flex:1;min-width:0;}
+.comp-name{font-size:0.85rem;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.comp-spec{font-size:0.65rem;color:var(--muted);margin-top:2px;font-family:'Share Tech Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.comp-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.comp-tag{
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;font-weight:700;
+  padding:2px 7px;border-radius:3px;white-space:nowrap;
+}
+.comp-watt{font-size:0.65rem;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+/* ─── CENTER ─── */
+.center{
+  display:flex;flex-direction:column;align-items:center;
+  overflow:hidden;background:var(--bg);position:relative;
+  padding:16px;gap:10px;
+}
+
+/* Assembly area title */
+.center-head{
+  font-size:0.62rem;font-weight:700;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.center-head::before,.center-head::after{
+  content:'';flex:1;height:1px;background:var(--border);
+  max-width:60px;
+}
+
+/* Assembly stage */
+.assembly-stage{
+  position:relative;
+  width:260px;
+  flex:1;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ─── PHONE FRAME (the target) ─── */
+.phone-frame{
+  width:200px;
+  height:400px;
+  position:relative;
+  z-index:10;
+}
+
+.phone-chassis{
+  width:200px;height:400px;
+  border-radius:36px;
+  background:linear-gradient(160deg,#1e222c 0%,#14171f 40%,#0f1218 70%,#181c26 100%);
+  position:relative;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.6),
+    inset 1px 0 0 rgba(255,255,255,0.05),
+    inset -1px 0 0 rgba(0,0,0,0.4),
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 30px 80px rgba(0,0,0,0.8),
+    0 0 60px rgba(0,0,0,0.4);
+  overflow:visible;
+}
+
+/* Chassis edge detail */
+.phone-chassis::before{
+  content:'';position:absolute;inset:2px;border-radius:34px;
+  border:1px solid rgba(255,255,255,0.04);pointer-events:none;
+}
+
+/* Screen cutout */
+.phone-screen-area{
+  position:absolute;
+  top:10px;left:10px;right:10px;bottom:10px;
+  border-radius:26px;
+  background:#060810;
+  overflow:hidden;
+  border:1px solid rgba(0,0,0,0.8);
+}
+
+/* Dynamic island */
+.dyn-island{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:76px;height:22px;background:#030507;border-radius:12px;
+  z-index:20;display:flex;align-items:center;justify-content:center;gap:6px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04);
+}
+.di-camera{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#0d1020,#020408);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.07),inset 0 0 3px rgba(0,100,255,0.3);}
+.di-sensor{width:5px;height:5px;border-radius:50%;background:#030507;box-shadow:0 0 0 1px rgba(255,255,255,0.05);}
+
+/* Phone side buttons */
+.phone-vol-up{position:absolute;left:-3px;top:90px;width:3px;height:30px;border-radius:2px 0 0 2px;
+  background:linear-gradient(to right,#1a1d24,#252930);box-shadow:inset 1px 0 rgba(255,255,255,0.05);}
+.phone-vol-dn{position:absolute;left:-3px;top:130px;width:3px;height:30px;border-radius:2px 0 0 2px;
+  background:linear-gradient(to right,#1a1d24,#252930);}
+.phone-pwr{position:absolute;right:-3px;top:110px;width:3px;height:46px;border-radius:0 2px 2px 0;
+  background:linear-gradient(to left,#1a1d24,#252930);box-shadow:inset -1px 0 rgba(255,255,255,0.05);}
+
+/* Sheen */
+.phone-sheen{
+  position:absolute;top:0;left:0;width:40%;height:100%;
+  background:linear-gradient(120deg,rgba(255,255,255,0.05) 0%,transparent 60%);
+  pointer-events:none;border-radius:36px 0 0 36px;
+}
+
+/* Phone screen content */
+.screen-content{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+  padding-top:40px;
+}
+
+.screen-status{
+  display:flex;justify-content:space-between;padding:4px 16px;
+  font-family:'Share Tech Mono',monospace;font-size:0.42rem;
+  color:rgba(255,255,255,0.4);
+}
+
+/* Assembly slots inside phone screen */
+.phone-slots{
+  flex:1;display:flex;flex-direction:column;
+  padding:4px 8px;gap:3px;overflow:hidden;
+}
+
+.phone-slot{
+  border-radius:5px;height:38px;flex-shrink:0;
+  display:flex;align-items:center;gap:6px;
+  padding:0 8px;
+  border:1px dashed rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.02);
+  transition:all 0.3s;
+  overflow:hidden;position:relative;
+}
+
+.phone-slot.filled{
+  border-style:solid;
+  border-color:var(--slot-color,rgba(255,255,255,0.15));
+  background:rgba(var(--slot-rgb,255,255,255),0.04);
+}
+
+.slot-icon{font-size:14px;flex-shrink:0;}
+
+.slot-label{
+  font-size:0.52rem;color:rgba(255,255,255,0.25);
+  font-family:'Share Tech Mono',monospace;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  flex:1;
+}
+
+.slot-name{
+  font-size:0.56rem;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  flex:1;line-height:1.1;
+}
+
+.slot-sub{font-size:0.45rem;color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace;}
+
+.slot-dot{
+  width:5px;height:5px;border-radius:50%;
+  flex-shrink:0;
+}
+
+/* Power bar at bottom */
+.phone-power-bar{
+  height:2px;margin:0 10px 6px;border-radius:1px;
+  background:rgba(255,255,255,0.06);overflow:hidden;
+}
+.phone-power-fill{height:100%;border-radius:1px;transition:width 0.5s,background 0.3s;}
+
+/* Phone glow when complete */
+.phone-chassis.complete{
+  animation:phoneGlow 2.5s ease-in-out infinite;
+}
+@keyframes phoneGlow{
+  0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 0 0 1px rgba(0,0,0,0.9),0 30px 80px rgba(0,0,0,0.8),0 0 40px rgba(57,255,110,0.08);}
+  50%{box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 0 0 1px rgba(0,0,0,0.9),0 30px 80px rgba(0,0,0,0.8),0 0 80px rgba(57,255,110,0.2);}
+}
+
+/* ─── FLYING COMPONENT ANIMATION ─── */
+.flying-comp{
+  position:fixed;
+  border-radius:8px;
+  pointer-events:none;
+  z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6);
+  transition:none;
+}
+
+/* ─── SPARKS ─── */
+.spark{
+  position:fixed;
+  width:4px;height:4px;border-radius:50%;
+  pointer-events:none;z-index:9998;
+  animation:sparkFly 0.6s ease-out forwards;
+}
+@keyframes sparkFly{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0);}
+}
+
+/* ─── SLOT FILL ANIMATION ─── */
+@keyframes slotFill{
+  0%{transform:translateY(-20px);opacity:0;}
+  60%{transform:translateY(3px);opacity:1;}
+  80%{transform:translateY(-1px);}
+  100%{transform:translateY(0);}
+}
+.slot-filling{animation:slotFill 0.4s cubic-bezier(0.4,0,0.2,1) forwards;}
+
+/* Ripple on slot */
+@keyframes slotRipple{
+  0%{box-shadow:0 0 0 0px var(--slot-color,rgba(0,240,255,0.4));}
+  100%{box-shadow:0 0 0 8px rgba(0,240,255,0);}
+}
+.slot-ripple{animation:slotRipple 0.5s ease-out;}
+
+/* ─── RIGHT PANEL ─── */
+.right{
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;background:var(--panel);
+}
+
+.right-head{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:0.65rem;font-weight:700;letter-spacing:0.14em;
+  color:var(--muted);text-transform:uppercase;flex-shrink:0;
+}
+
+/* Stats grid */
+.stats-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.stat-box{
+  padding:12px 14px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.stat-box:nth-child(2n){border-right:none;}
+.stat-box:nth-last-child(-n+2){border-bottom:none;}
+.stat-label{font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;font-weight:600;line-height:1;}
+.stat-sub{font-size:0.6rem;color:var(--muted);margin-top:2px;}
+
+/* Build log */
+.build-log{
+  flex:1;overflow-y:auto;padding:10px;
+}
+.build-log::-webkit-scrollbar{width:3px;}
+.build-log::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.log-entry{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:7px 8px;border-radius:5px;
+  margin-bottom:4px;background:var(--card);
+  border:1px solid var(--border);
+  animation:logIn 0.3s ease;
+}
+@keyframes logIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
+
+.log-time{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);flex-shrink:0;padding-top:1px;}
+.log-icon{font-size:12px;flex-shrink:0;}
+.log-text{font-size:0.72rem;flex:1;}
+.log-text strong{color:var(--text);}
+.log-sub{font-size:0.6rem;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+/* Compat banner */
+.compat-banner{
+  padding:10px 14px;border-top:1px solid var(--border);
+  font-size:0.78rem;font-weight:700;
+  display:flex;align-items:center;gap:8px;
+  transition:all 0.3s;flex-shrink:0;
+}
+
+/* Actions */
+.actions{padding:10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.btn{
+  width:100%;padding:10px;border-radius:5px;border:none;
+  font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+  letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-primary{background:var(--cyan);color:#000;}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(70px);
+  background:var(--card);border:1px solid var(--border2);
+  color:var(--text);padding:8px 20px;border-radius:30px;
+  font-size:0.82rem;font-weight:600;letter-spacing:0.04em;
+  z-index:99999;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ─── FEEDBACK MODAL ─── */
+@keyframes modalIn{
+  from{opacity:0;transform:scale(0.94) translateY(16px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+.star{
+  font-size:28px;cursor:pointer;
+  color:var(--border2);transition:all 0.15s;
+  line-height:1;user-select:none;
+}
+.star.active{color:var(--amber);text-shadow:0 0 12px rgba(255,184,48,0.5);}
+.star.hover{color:var(--amber);opacity:0.7;}
+
+.fb-cat{
+  padding:5px 11px;border-radius:20px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--muted);font-family:'Rajdhani',sans-serif;
+  font-size:0.75rem;font-weight:600;letter-spacing:0.04em;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.fb-cat:hover{border-color:var(--purple);color:var(--purple);}
+.fb-cat.selected{
+  border-color:var(--purple);background:var(--purple2);color:var(--purple);
+}
+
+.fb-mood{
+  width:40px;height:40px;border-radius:8px;
+  border:1px solid var(--border2);background:var(--card);
+  font-size:18px;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.fb-mood:hover{border-color:var(--purple);transform:scale(1.1);}
+.fb-mood.selected{
+  border-color:var(--purple);background:var(--purple2);
+  transform:scale(1.15);box-shadow:0 0 12px rgba(199,125,255,0.3);
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE SYSTEM — FLOATING PHONE WIDGET
+   ══════════════════════════════════════════ */
+
+/* Hide ALL mobile-only elements by default (desktop sees none of these) */
+#floating-phone,
+#fp-drawer,
+#fp-drawer-overlay{ display:none !important; }
+
+/* ── LARGE (≥ 1400px) ── */
+@media (min-width:1400px){
+  main{grid-template-columns:340px 1fr 320px;}
+  .phone-chassis,.phone-frame{width:220px;height:440px;}
+  .assembly-stage{width:280px;}
+}
+@media (min-width:1920px){
+  main{grid-template-columns:380px 1fr 360px;}
+  .phone-chassis,.phone-frame{width:240px;height:480px;}
+  .comp-name{font-size:0.95rem;}
+  .stat-val{font-size:1.3rem;}
+}
+
+/* ── TABLET (≤ 1024px) ── */
+@media (max-width:1024px){
+  main{grid-template-columns:260px 1fr;grid-template-rows:1fr auto;}
+  .right{grid-column:1/-1;max-height:260px;border-left:none;border-top:1px solid var(--border);}
+  .phone-chassis,.phone-frame{width:175px;height:350px;}
+  .assembly-stage{width:210px;}
+}
+
+/* ════════════════════════════════════════
+   MOBILE ≤ 768px  — Floating Phone Widget
+   ════════════════════════════════════════ */
+@media (max-width:768px){
+  html,body{overflow:auto;height:auto;}
+
+  /* Header */
+  header{padding:0 14px;height:50px;}
+  .logo{font-size:1rem;}
+  .logo-sub{display:none;}
+  .hdr-stats{gap:12px;}
+  .hdr-btn{padding:5px 11px;font-size:0.72rem;}
+
+  /* Hide center + right in main flow — phone floats instead */
+  main{
+    display:block;
+    height:auto;
+    overflow:visible;
+    padding-bottom:100px;
+  }
+  .center,.right{display:none !important;}
+
+  /* Left = full scrollable catalog */
+  .left{
+    width:100%;height:auto;min-height:calc(100svh - 50px);
+    border-right:none;overflow:visible;
+  }
+  .left-head{padding:10px 14px;}
+  .comp-list{overflow:visible;flex:none;padding:8px 10px 120px;}
+
+  /* Show mobile-only elements */
+  #floating-phone{display:flex !important;}
+  #fp-drawer{display:block !important;}
+  #fp-drawer-overlay{display:none !important;} /* shown via .show class by JS */
+  #fp-drawer-overlay.show{display:block !important;}
+
+  /* ── FLOATING MINI PHONE ── */
+  #floating-phone{
+    display:flex;
+    position:fixed;
+    bottom:20px;right:16px;
+    z-index:500;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+    pointer-events:none;
+  }
+
+  /* Stats pill above phone */
+  #fp-stats-pill{
+    pointer-events:auto;
+    background:rgba(8,10,15,0.92);
+    border:1px solid var(--border2);
+    border-radius:20px;
+    padding:5px 12px;
+    display:flex;gap:10px;align-items:center;
+    backdrop-filter:blur(20px);
+    box-shadow:0 4px 20px rgba(0,0,0,0.6);
+    cursor:pointer;
+    transition:all 0.25s;
+  }
+  #fp-stats-pill:hover{border-color:var(--cyan);box-shadow:0 4px 24px rgba(0,240,255,0.1);}
+  .fp-pill-stat{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+  }
+  .fp-pill-lbl{font-size:0.42rem;color:var(--muted);letter-spacing:0.1em;font-family:'Share Tech Mono',monospace;}
+  .fp-pill-val{font-size:0.7rem;font-weight:700;font-family:'Share Tech Mono',monospace;}
+  .fp-pill-sep{width:1px;height:22px;background:var(--border);}
+
+  /* The mini phone itself */
+  #fp-phone-wrap{
+    pointer-events:auto;
+    position:relative;
+    cursor:pointer;
+  }
+
+  /* Pulse ring when slots are filling */
+  #fp-phone-wrap::before{
+    content:'';
+    position:absolute;inset:-6px;border-radius:22px;
+    border:1.5px solid rgba(0,240,255,0.15);
+    transition:all 0.3s;
+  }
+  #fp-phone-wrap.has-comp::before{
+    border-color:rgba(0,240,255,0.35);
+    box-shadow:0 0 20px rgba(0,240,255,0.1);
+    animation:fpRing 2.5s ease-in-out infinite;
+  }
+  #fp-phone-wrap.complete::before{
+    border-color:rgba(57,255,110,0.5);
+    box-shadow:0 0 30px rgba(57,255,110,0.15);
+    animation:fpRingGreen 2.5s ease-in-out infinite;
+  }
+  @keyframes fpRing{
+    0%,100%{box-shadow:0 0 12px rgba(0,240,255,0.08);}
+    50%{box-shadow:0 0 28px rgba(0,240,255,0.2);}
+  }
+  @keyframes fpRingGreen{
+    0%,100%{box-shadow:0 0 18px rgba(57,255,110,0.1);}
+    50%{box-shadow:0 0 36px rgba(57,255,110,0.25);}
+  }
+
+  /* Mini phone chassis */
+  #fp-chassis{
+    width:76px;height:152px;
+    border-radius:16px;
+    background:linear-gradient(160deg,#1e222c 0%,#14171f 40%,#0f1218 70%,#181c26 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 0 0 1px rgba(0,0,0,0.9),
+      0 12px 40px rgba(0,0,0,0.8);
+    position:relative;overflow:visible;
+    transition:box-shadow 0.4s;
+  }
+  #fp-chassis.complete{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      0 0 0 1px rgba(0,0,0,0.9),
+      0 12px 40px rgba(0,0,0,0.8),
+      0 0 30px rgba(57,255,110,0.15);
+    animation:fpGlow 2.5s ease-in-out infinite;
+  }
+  @keyframes fpGlow{
+    0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 0 0 1px rgba(0,0,0,0.9),0 12px 40px rgba(0,0,0,0.8),0 0 20px rgba(57,255,110,0.1);}
+    50%{box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 0 0 1px rgba(0,0,0,0.9),0 12px 40px rgba(0,0,0,0.8),0 0 50px rgba(57,255,110,0.28);}
+  }
+
+  /* Mini Dynamic island */
+  #fp-island{
+    position:absolute;top:5px;left:50%;transform:translateX(-50%);
+    width:26px;height:8px;background:#030507;border-radius:4px;z-index:5;
+    display:flex;align-items:center;justify-content:center;gap:3px;
+  }
+  .fp-di-cam{width:4px;height:4px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#0d1020,#020408);box-shadow:0 0 0 1px rgba(255,255,255,0.07);}
+  .fp-di-dot{width:2px;height:2px;border-radius:50%;background:#030507;}
+
+  /* Mini screen */
+  #fp-screen{
+    position:absolute;top:4px;left:4px;right:4px;bottom:4px;
+    border-radius:12px;background:#060810;overflow:hidden;
+  }
+
+  /* Mini slots */
+  #fp-slots{
+    position:absolute;top:16px;left:3px;right:3px;
+    display:flex;flex-direction:column;gap:1.5px;
+  }
+  .fp-slot{
+    height:16px;border-radius:2px;
+    border:1px dashed rgba(255,255,255,0.07);
+    display:flex;align-items:center;gap:3px;
+    padding:0 3px;transition:all 0.3s;overflow:hidden;
+  }
+  .fp-slot.filled{
+    border-style:solid;
+    border-color:var(--fsc,rgba(255,255,255,0.15));
+    background:rgba(var(--fsr,255,255,255),0.04);
+    animation:fpSlotPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes fpSlotPop{
+    0%{transform:scale(0.9);opacity:0.5;}
+    100%{transform:scale(1);opacity:1;}
+  }
+  .fp-slot-dot{width:3px;height:3px;border-radius:50%;flex-shrink:0;}
+  .fp-slot-name{font-size:0.32rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Share Tech Mono',monospace;}
+
+  /* Mini power bar */
+  #fp-pwbar{position:absolute;bottom:3px;left:4px;right:4px;height:1.5px;background:rgba(255,255,255,0.05);border-radius:1px;overflow:hidden;}
+  #fp-pwfill{height:100%;border-radius:1px;transition:width 0.5s,background 0.3s;}
+
+  /* Sheen */
+  #fp-chassis::after{
+    content:'';position:absolute;top:0;left:0;width:40%;height:100%;
+    background:linear-gradient(120deg,rgba(255,255,255,0.05) 0%,transparent 60%);
+    pointer-events:none;border-radius:16px 0 0 16px;
+  }
+  /* Side buttons */
+  .fp-btn-l{position:absolute;left:-2px;top:34px;width:2px;height:12px;border-radius:1px 0 0 1px;background:#1a1d24;}
+  .fp-btn-l2{position:absolute;left:-2px;top:50px;width:2px;height:12px;border-radius:1px 0 0 1px;background:#1a1d24;}
+  .fp-btn-r{position:absolute;right:-2px;top:42px;width:2px;height:18px;border-radius:0 1px 1px 0;background:#1a1d24;}
+
+  /* Stats drawer — slides up from bottom on tap */
+  #fp-drawer{
+    pointer-events:auto;
+    position:fixed;
+    left:0;right:0;bottom:0;
+    z-index:600;
+    background:rgba(8,10,15,0.97);
+    border-top:1px solid var(--border2);
+    border-radius:20px 20px 0 0;
+    padding:0 0 env(safe-area-inset-bottom,0);
+    backdrop-filter:blur(30px);
+    box-shadow:0 -10px 60px rgba(0,0,0,0.7);
+    transform:translateY(100%);
+    transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);
+  }
+  #fp-drawer.open{transform:translateY(0);}
+  #fp-drawer-handle{
+    width:36px;height:4px;border-radius:2px;
+    background:var(--border2);margin:10px auto 0;cursor:pointer;
+  }
+  #fp-drawer-content{padding:14px 16px 20px;}
+  #fp-drawer-overlay{
+    display:none;position:fixed;inset:0;z-index:590;background:rgba(0,0,0,0.5);
+    backdrop-filter:blur(2px);
+  }
+  #fp-drawer-overlay.show{display:block;}
+
+  /* Drawer stats */
+  .drw-stat-row{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:8px;margin-bottom:12px;
+  }
+  .drw-stat{
+    background:var(--card);border:1px solid var(--border);border-radius:8px;
+    padding:10px 8px;text-align:center;
+  }
+  .drw-stat-lbl{font-size:0.5rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+  .drw-stat-val{font-family:'Share Tech Mono',monospace;font-size:0.9rem;font-weight:700;}
+  .drw-compat{
+    padding:9px 12px;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);font-size:0.75rem;font-weight:700;
+    display:flex;align-items:center;gap:8px;color:var(--muted);
+    margin-bottom:10px;transition:all 0.3s;
+  }
+  .drw-log{
+    max-height:160px;overflow-y:auto;margin-bottom:10px;
+    scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+  }
+  .drw-actions{display:flex;gap:8px;}
+  .drw-btn{
+    flex:1;padding:10px;border-radius:8px;border:none;
+    font-family:'Rajdhani',sans-serif;font-size:0.78rem;font-weight:700;
+    letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;gap:5px;
+  }
+  .drw-btn-p{background:var(--cyan);color:#000;}
+  .drw-btn-p:hover{filter:brightness(1.1);}
+  .drw-btn-o{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+  .drw-btn-o:hover{border-color:var(--cyan);color:var(--cyan);}
+
+  /* Tab pills for categories on mobile */
+  .left-tabs{
+    gap:0;overflow-x:auto;scrollbar-width:none;
+    padding:8px 10px;border-bottom:1px solid var(--border);
+    background:var(--panel);
+  }
+  .left-tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    padding:6px 12px;
+    border-radius:20px;
+    border:1px solid transparent;
+    font-size:0.68rem;
+    margin-right:4px;
+    transition:all 0.18s;
+  }
+  .tab.active{
+    background:var(--cyan2);
+    border-color:var(--cyan);
+    color:var(--cyan);
+    border-bottom-color:var(--cyan);
+  }
+
+  /* Feedback modal sheet */
+  #fb-modal{
+    width:100% !important;max-width:100% !important;
+    border-radius:20px 20px 0 0 !important;
+    position:fixed;bottom:0;margin:0;
+  }
+  #fb-overlay{align-items:flex-end !important;}
+}
+
+/* ── MOBILE ≤ 480px ── */
+@media (max-width:480px){
+  header{height:46px;padding:0 12px;}
+  .logo{font-size:0.9rem;}
+  .hdr-stats .hdr-stat:nth-child(2){display:none;}
+  .hdr-btn{padding:4px 9px;font-size:0.66rem;}
+
+  #fp-chassis{width:70px;height:140px;}
+  #fp-slots .fp-slot{height:14px;}
+  #fp-slots .fp-slot-name{font-size:0.28rem;}
+
+  .drw-stat-row{grid-template-columns:repeat(2,1fr);}
+  .drw-stat-val{font-size:0.8rem;}
+  .drw-actions{flex-direction:column;}
+}

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAMS — Smartphone Assembly</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    ⬡ SAMS
+    <span class="logo-sub">ASSEMBLY SYSTEM v3.0</span>
+  </div>
+  <div class="hdr-stats">
+    <div class="hdr-stat"><span style="font-size:0.6rem">POWER</span><span class="hdr-stat-val" id="h-power">0.0W</span></div>
+    <div class="hdr-stat"><span style="font-size:0.6rem">BATTERY</span><span class="hdr-stat-val" id="h-bat" style="color:var(--green)">—</span></div>
+    <div class="hdr-stat"><span style="font-size:0.6rem">SLOTS</span><span class="hdr-stat-val" id="h-slots" style="color:var(--amber)">0/6</span></div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="hdr-btn" onclick="openFeedback()" style="border-color:var(--purple);color:var(--purple);">💬 FEEDBACK</button>
+    <button class="hdr-btn" onclick="resetAll()">⟳ RESET BUILD</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══ LEFT: Component Catalog ═══ -->
+<div class="left">
+  <div class="left-head">
+    <span>Component Catalog</span>
+    <span style="color:var(--cyan);font-size:0.6rem" id="sel-hint">← Click to assemble</span>
+  </div>
+
+  <div class="left-tabs" id="tabs">
+    <div class="tab active" data-cat="cpu" onclick="switchTab(this,'cpu')">🔲 CPU</div>
+    <div class="tab" data-cat="bat" onclick="switchTab(this,'bat')">🔋 Battery</div>
+    <div class="tab" data-cat="cam" onclick="switchTab(this,'cam')">📷 Camera</div>
+    <div class="tab" data-cat="dsp" onclick="switchTab(this,'dsp')">🖥 Display</div>
+    <div class="tab" data-cat="spk" onclick="switchTab(this,'spk')">🔊 Audio</div>
+    <div class="tab" data-cat="chg" onclick="switchTab(this,'chg')">⚡ Charging</div>
+  </div>
+
+  <div class="comp-list" id="comp-list"></div>
+</div>
+
+<!-- ═══ CENTER: Assembly Stage ═══ -->
+<div class="center">
+  <div class="center-head" style="width:100%">Assembly Stage</div>
+
+  <div class="assembly-stage">
+    <div class="phone-frame">
+      <div class="phone-chassis" id="phone-chassis">
+        <!-- Dynamic island -->
+        <div class="dyn-island">
+          <div class="di-camera"></div>
+          <div class="di-sensor"></div>
+        </div>
+        <!-- Side buttons -->
+        <div class="phone-vol-up"></div>
+        <div class="phone-vol-dn"></div>
+        <div class="phone-pwr"></div>
+        <!-- Sheen -->
+        <div class="phone-sheen"></div>
+        <!-- Screen area -->
+        <div class="phone-screen-area">
+          <div class="screen-content">
+            <div class="screen-status">
+              <span id="s-clock">9:41</span>
+              <span>▲▲▲ ▮▮▮▮</span>
+            </div>
+            <div class="phone-slots" id="phone-slots">
+              <!-- filled by JS -->
+            </div>
+            <div class="phone-power-bar">
+              <div class="phone-power-fill" id="power-fill" style="width:0%;background:var(--green)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compatibility indicator -->
+  <div id="compat-center" style="
+    padding:10px 20px;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);font-size:0.78rem;font-weight:700;
+    display:flex;align-items:center;gap:8px;width:100%;max-width:320px;
+    color:var(--muted);letter-spacing:0.04em;flex-shrink:0;
+  ">
+    <span>⬜</span><span>Select all 6 components to validate</span>
+  </div>
+</div>
+
+<!-- ═══ RIGHT: Build Log & Stats ═══ -->
+<div class="right">
+  <div class="right-head">Build Monitor</div>
+
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-label">Total Power</div>
+      <div class="stat-val" id="st-pow" style="color:var(--cyan)">0.0W</div>
+      <div class="stat-sub">draw</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Battery Life</div>
+      <div class="stat-val" id="st-bat" style="color:var(--green)">—</div>
+      <div class="stat-sub">estimated</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Thermal</div>
+      <div class="stat-val" id="st-therm" style="color:var(--muted);font-size:0.85rem">—</div>
+      <div class="stat-sub">risk</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Profile</div>
+      <div class="stat-val" id="st-prof" style="color:var(--muted);font-size:0.72rem">Unset</div>
+      <div class="stat-sub">type</div>
+    </div>
+  </div>
+
+  <div class="build-log" id="build-log">
+    <div style="color:var(--muted);font-size:0.72rem;padding:8px;text-align:center;">
+      Assembly log will appear here...
+    </div>
+  </div>
+
+  <div class="compat-banner" id="compat-banner" style="background:rgba(255,255,255,0.02);color:var(--muted);">
+    <span>⬜</span><span>Awaiting components...</span>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="saveConfig()">💾 SAVE BUILD</button>
+    <button class="btn btn-outline" onclick="exportReport()">📄 EXPORT REPORT</button>
+    <button class="btn btn-outline" onclick="openFeedback()" style="border-color:var(--purple);color:var(--purple);">💬 LEAVE FEEDBACK</button>
+  </div>
+</div>
+
+</main>
+
+<!-- ─── TOAST ─── -->
+<div id="toast"></div>
+
+<!-- ═══ FLOATING PHONE WIDGET (mobile only) ═══ -->
+<div id="floating-phone">
+
+  <!-- Stats pill -->
+  <div id="fp-stats-pill" onclick="openDrawer()">
+    <div class="fp-pill-stat">
+      <span class="fp-pill-lbl">POWER</span>
+      <span class="fp-pill-val" id="fp-pow" style="color:var(--cyan)">0.0W</span>
+    </div>
+    <div class="fp-pill-sep"></div>
+    <div class="fp-pill-stat">
+      <span class="fp-pill-lbl">BATTERY</span>
+      <span class="fp-pill-val" id="fp-bat" style="color:var(--green)">—</span>
+    </div>
+    <div class="fp-pill-sep"></div>
+    <div class="fp-pill-stat">
+      <span class="fp-pill-lbl">SLOTS</span>
+      <span class="fp-pill-val" id="fp-slots-count" style="color:var(--amber)">0/6</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-left:4px;">▲</div>
+  </div>
+
+  <!-- Mini phone -->
+  <div id="fp-phone-wrap" onclick="openDrawer()">
+    <div id="fp-chassis">
+      <div id="fp-island">
+        <div class="fp-di-cam"></div>
+        <div class="fp-di-dot"></div>
+      </div>
+      <div class="fp-btn-l"></div>
+      <div class="fp-btn-l2"></div>
+      <div class="fp-btn-r"></div>
+      <div id="fp-screen">
+        <div id="fp-slots"></div>
+        <div id="fp-pwbar"><div id="fp-pwfill" style="width:0%;background:var(--green)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DRAWER OVERLAY ═══ -->
+<div id="fp-drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- ═══ STATS DRAWER ═══ -->
+<div id="fp-drawer">
+  <div id="fp-drawer-handle" onclick="closeDrawer()"></div>
+  <div id="fp-drawer-content">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;">Build Monitor</div>
+      <button onclick="closeDrawer()" style="background:none;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+        onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>
+    </div>
+
+    <div class="drw-stat-row">
+      <div class="drw-stat">
+        <div class="drw-stat-lbl">Power</div>
+        <div class="drw-stat-val" id="drw-pow" style="color:var(--cyan)">0.0W</div>
+      </div>
+      <div class="drw-stat">
+        <div class="drw-stat-lbl">Battery</div>
+        <div class="drw-stat-val" id="drw-bat" style="color:var(--green)">—</div>
+      </div>
+      <div class="drw-stat">
+        <div class="drw-stat-lbl">Thermal</div>
+        <div class="drw-stat-val" id="drw-therm" style="color:var(--muted);font-size:0.72rem">—</div>
+      </div>
+      <div class="drw-stat">
+        <div class="drw-stat-lbl">Profile</div>
+        <div class="drw-stat-val" id="drw-prof" style="color:var(--muted);font-size:0.58rem">Unset</div>
+      </div>
+    </div>
+
+    <div class="drw-compat" id="drw-compat">
+      <span>⬜</span><span>Select all 6 components to validate</span>
+    </div>
+
+    <div style="font-size:0.56rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Assembly Log</div>
+    <div class="drw-log" id="drw-log">
+      <div style="color:var(--muted);font-size:0.68rem;padding:8px;text-align:center;">No components yet...</div>
+    </div>
+
+    <div class="drw-actions">
+      <button class="drw-btn drw-btn-p" onclick="saveConfig();closeDrawer()">💾 SAVE BUILD</button>
+      <button class="drw-btn drw-btn-o" onclick="exportReport();closeDrawer()">📄 EXPORT</button>
+      <button class="drw-btn drw-btn-o" onclick="closeDrawer();openFeedback()" style="border-color:var(--purple);color:var(--purple);">💬 FEEDBACK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FEEDBACK MODAL ═══ -->
+<div id="fb-overlay" onclick="closeFeedback(event)" style="
+  display:none;position:fixed;inset:0;z-index:10000;
+  background:rgba(4,6,10,0.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+">
+  <div id="fb-modal" onclick="event.stopPropagation()" style="
+    width:460px;max-width:95vw;
+    background:var(--panel);
+    border:1px solid var(--border2);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 40px 100px rgba(0,0,0,0.8),0 0 0 1px rgba(199,125,255,0.15);
+    animation:modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
+  ">
+    <!-- Modal header -->
+    <div style="
+      padding:16px 20px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      background:linear-gradient(135deg,rgba(199,125,255,0.06),transparent);
+    ">
+      <div>
+        <div style="font-size:1rem;font-weight:700;letter-spacing:0.05em;color:var(--purple);">💬 FEEDBACK</div>
+        <div style="font-size:0.65rem;color:var(--muted);margin-top:2px;font-family:'Share Tech Mono',monospace;">Help us improve SAMS</div>
+      </div>
+      <button onclick="closeFeedback()" style="
+        background:none;border:1px solid var(--border);color:var(--muted);
+        width:28px;height:28px;border-radius:6px;cursor:pointer;
+        font-size:14px;display:flex;align-items:center;justify-content:center;
+        transition:all 0.2s;
+      " onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>
+    </div>
+
+    <!-- Step 1: Form -->
+    <div id="fb-step1" style="padding:20px;">
+
+      <div style="margin-bottom:18px;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Overall Experience</div>
+        <div id="stars" style="display:flex;gap:6px;">
+          <span class="star" data-v="1" onclick="rateStar(1)" onmouseover="hoverStar(1)" onmouseout="unhoverStar()">★</span>
+          <span class="star" data-v="2" onclick="rateStar(2)" onmouseover="hoverStar(2)" onmouseout="unhoverStar()">★</span>
+          <span class="star" data-v="3" onclick="rateStar(3)" onmouseover="hoverStar(3)" onmouseout="unhoverStar()">★</span>
+          <span class="star" data-v="4" onclick="rateStar(4)" onmouseover="hoverStar(4)" onmouseout="unhoverStar()">★</span>
+          <span class="star" data-v="5" onclick="rateStar(5)" onmouseover="hoverStar(5)" onmouseout="unhoverStar()">★</span>
+        </div>
+        <div id="star-label" style="font-size:0.7rem;color:var(--muted);margin-top:6px;font-family:'Share Tech Mono',monospace;height:14px;"></div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Category</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;" id="fb-cats">
+          <button class="fb-cat" data-c="UI Design"          onclick="selectCat(this)">🎨 UI Design</button>
+          <button class="fb-cat" data-c="Assembly Animation" onclick="selectCat(this)">🎬 Animation</button>
+          <button class="fb-cat" data-c="Component Data"     onclick="selectCat(this)">📦 Components</button>
+          <button class="fb-cat" data-c="Performance"        onclick="selectCat(this)">⚡ Performance</button>
+          <button class="fb-cat" data-c="Validation Logic"   onclick="selectCat(this)">✅ Validation</button>
+          <button class="fb-cat" data-c="Feature Request"    onclick="selectCat(this)">💡 Feature Idea</button>
+          <button class="fb-cat" data-c="Bug Report"         onclick="selectCat(this)">🐛 Bug Report</button>
+          <button class="fb-cat" data-c="Other"              onclick="selectCat(this)">💬 Other</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">How are you feeling?</div>
+        <div style="display:flex;gap:8px;" id="fb-moods">
+          <button class="fb-mood" data-m="😍 Loved it"   onclick="selectMood(this)">😍</button>
+          <button class="fb-mood" data-m="😊 Satisfied"  onclick="selectMood(this)">😊</button>
+          <button class="fb-mood" data-m="😐 Neutral"    onclick="selectMood(this)">😐</button>
+          <button class="fb-mood" data-m="😕 Confused"   onclick="selectMood(this)">😕</button>
+          <button class="fb-mood" data-m="😤 Frustrated" onclick="selectMood(this)">😤</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Message <span style="color:var(--red);font-size:0.8rem;">*</span></div>
+        <textarea id="fb-msg" placeholder="Tell us what you think about SAMS, suggest improvements, or report a bug..." style="
+          width:100%;height:90px;padding:10px 12px;
+          background:var(--card);border:1px solid var(--border2);
+          border-radius:6px;color:var(--text);resize:none;
+          font-family:'Rajdhani',sans-serif;font-size:0.82rem;
+          outline:none;transition:border-color 0.2s;line-height:1.4;
+        " onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:3px;">
+          <span id="char-count" style="font-size:0.6rem;color:var(--muted);font-family:'Share Tech Mono',monospace;">0 / 500</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+        <div>
+          <div style="font-size:0.62rem;color:var(--muted);margin-bottom:5px;letter-spacing:0.08em;text-transform:uppercase;">Name <span style="font-size:0.7rem;">(optional)</span></div>
+          <input id="fb-name" type="text" placeholder="Your name" style="
+            width:100%;padding:8px 10px;background:var(--card);
+            border:1px solid var(--border2);border-radius:5px;
+            color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.82rem;
+            outline:none;transition:border-color 0.2s;
+          " onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border2)'" />
+        </div>
+        <div>
+          <div style="font-size:0.62rem;color:var(--muted);margin-bottom:5px;letter-spacing:0.08em;text-transform:uppercase;">Email <span style="font-size:0.7rem;">(optional)</span></div>
+          <input id="fb-email" type="email" placeholder="you@example.com" style="
+            width:100%;padding:8px 10px;background:var(--card);
+            border:1px solid var(--border2);border-radius:5px;
+            color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.82rem;
+            outline:none;transition:border-color 0.2s;
+          " onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border2)'" />
+        </div>
+      </div>
+
+      <div style="
+        display:flex;align-items:center;gap:10px;
+        padding:10px 12px;background:var(--card);
+        border:1px solid var(--border);border-radius:6px;margin-bottom:18px;
+        cursor:pointer;
+      " onclick="toggleBuildInfo()">
+        <div id="build-toggle" style="
+          width:32px;height:17px;border-radius:9px;
+          background:var(--purple);position:relative;transition:background 0.2s;
+        ">
+          <div id="build-toggle-knob" style="
+            position:absolute;top:2px;left:14px;width:13px;height:13px;
+            border-radius:50%;background:#fff;transition:left 0.2s;
+          "></div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;font-weight:600;">Include my current build</div>
+          <div style="font-size:0.6rem;color:var(--muted);">Attach component selections to this feedback</div>
+        </div>
+      </div>
+
+      <!-- Build preview -->
+      <div id="build-preview" style="
+        background:var(--card);border:1px solid var(--border);border-radius:6px;
+        padding:10px 12px;margin-bottom:18px;
+      ">
+        <div style="font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Current Build</div>
+        <pre id="build-preview-content" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text);white-space:pre;overflow:hidden;"></pre>
+      </div>
+
+      <button onclick="submitFeedback()" style="
+        width:100%;padding:12px;border-radius:6px;border:none;
+        background:linear-gradient(135deg,var(--purple),#a855f7);
+        color:#fff;font-family:'Rajdhani',sans-serif;
+        font-size:0.9rem;font-weight:700;letter-spacing:0.08em;
+        cursor:pointer;transition:all 0.2s;
+        box-shadow:0 4px 20px rgba(199,125,255,0.25);
+      " onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+        SUBMIT FEEDBACK →
+      </button>
+    </div>
+
+    <!-- Step 2: Thank you -->
+    <div id="fb-step2" style="display:none;padding:32px 20px;text-align:center;">
+      <div id="fb-thanks-icon" style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--purple);margin-bottom:8px;letter-spacing:0.05em;">Thank You!</div>
+      <div id="fb-thanks-msg" style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin-bottom:20px;"></div>
+      <div id="fb-summary-box" style="
+        background:var(--card);border:1px solid var(--border);
+        border-radius:8px;padding:12px;margin-bottom:20px;text-align:left;
+      "></div>
+      <button onclick="document.getElementById('fb-overlay').style.display='none'" style="
+        padding:10px 28px;border-radius:6px;border:1px solid var(--purple);
+        background:var(--purple2);color:var(--purple);
+        font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+        letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;
+      ">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
