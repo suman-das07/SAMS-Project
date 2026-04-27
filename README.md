@@ -6,10 +6,10 @@ A web-based interactive frontend for selecting and validating smartphone hardwar
 
 | Name | Role |
 |------|------|
-| Deep Raj Gupta | Frontend & UI |
+| Deep Raj Gupta | Integration, Documentation & Design|
 | Suman Das | Backend & Database |
-| Shashank N | Integration & Testing |
-| Prajapati Harsh | Documentation & Design |
+| Shashank N | Frontend & UI |
+| Prajapati Harsh | EDA & Testing |
 
 ---
 
