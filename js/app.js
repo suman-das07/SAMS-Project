@@ -76,6 +76,8 @@ let currentCat = 'cpu';
 let logEntries = [];
 
 // Tag color classes
+const API_BASE_URL = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+
 const TAG_CSS = {
   'tag-r':'background:var(--red2);color:var(--red);',
   'tag-a':'background:var(--amber2);color:var(--amber);',
@@ -481,11 +483,57 @@ function resetAll() {
 }
 
 // ─── SAVE / EXPORT ───────────────────────────────────────────
-function saveConfig() {
+function getBuildPayload() {
+  const stats = {
+    powerDraw: document.getElementById('st-pow').textContent,
+    batteryLife: document.getElementById('st-bat').textContent,
+    profile: document.getElementById('st-prof').textContent,
+    builtAt: new Date().toISOString(),
+  };
+  const components = Object.entries(SEL).reduce((acc,[cat,id]) => {
+    if (!id) return acc;
+    const comp = COMPONENTS[cat]?.find(c => c.id === id);
+    acc[cat] = {
+      id,
+      name: comp?.name || id,
+      tag: comp?.tag || '',
+      power: comp?.power || 0,
+    };
+    return acc;
+  }, {});
+  return { stats, components };
+}
+
+async function saveConfig() {
   const count = Object.values(SEL).filter(Boolean).length;
-  if (count < 6) { showToast('⚠ Select all 6 components first'); return; }
-  showToast('✅ Configuration saved!');
-  addLog('cpu', SEL.cpu); // re-confirm log
+  if (count < 6) {
+    showToast('⚠ Select all 6 components first');
+    return;
+  }
+
+  const payload = getBuildPayload();
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/builds`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Unable to save build to backend. Is the server running?');
+    }
+
+    const result = await response.json();
+    showToast('✅ Build saved to database!');
+    alert(result.message || 'Build saved successfully');
+    addLog('cpu', SEL.cpu);
+  } catch (err) {
+    console.error('saveConfig error:', err);
+    const message = err.message || 'Unable to reach backend. Start the Node.js MySQL server at http://localhost:3000';
+    showToast('⚠ Could not save build');
+    alert(`Save failed: ${message}`);
+  }
 }
 
 function exportReport() {

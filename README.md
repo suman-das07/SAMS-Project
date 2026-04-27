@@ -63,13 +63,54 @@ python3 -m http.server 8000
 
 ## 🔌 Backend Integration
 
-The frontend is currently standalone (in-memory state). To connect to the Node.js + Express + MySQL backend:
+A simple Node.js + Express backend is now included in `backend/`.
+It stores saved builds into a MySQL database and exposes a `POST /api/builds` endpoint.
 
-1. Replace `saveConfig()` in `js/app.js` with a `fetch()` POST to `/api/configurations`
-2. Replace `renderList()` with a `fetch()` GET from `/api/components`
-3. Set `CORS_ORIGIN` in your backend `.env` to your frontend URL
+### Run the backend
 
-Backend repo / folder: `sams-backend/`
+1. Install dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+2. Copy the environment file:
+
+```bash
+cp .env.example .env
+```
+
+3. Update `.env` with your MySQL credentials.
+
+4. Start the server:
+
+```bash
+npm start
+```
+
+5. Open the app in your browser via the backend host:
+
+```bash
+http://localhost:3000
+```
+
+The backend listens on `http://localhost:3000` by default.
+
+### What the backend does
+
+- saves build selections in MySQL
+- creates the `sams_db` database and `builds` table automatically
+- returns an acknowledgement message when the build is saved
+
+### Frontend behavior
+
+When the user clicks `SAVE BUILD`, the app now:
+
+- validates that all 6 components are selected
+- sends the build data to `/api/builds`
+- shows a confirmation toast plus a browser acknowledgement popup
+- stores the build in the MySQL database
 
 ---
 

@@ -19,6 +19,7 @@ npm-debug.log*
 .env
 .env.local
 .env.production
+.env.example
 
 # Build output (if added later)
 dist/
