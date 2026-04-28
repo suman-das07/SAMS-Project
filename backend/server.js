@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
+const nodemailer = require('nodemailer');
 
 dotenv.config();
 
@@ -13,6 +14,11 @@ const DB_USER = process.env.DB_USER || 'root';
 const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_NAME = process.env.DB_NAME || 'sams_db';
 
+// Email configuration
+const EMAIL_USER = process.env.EMAIL_USER; // Owner's Gmail
+const EMAIL_PASS = process.env.EMAIL_PASS; // Gmail app password
+const EMAIL_TO = process.env.EMAIL_TO || EMAIL_USER; // Where to send feedback
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -20,6 +26,18 @@ app.use(express.json());
 const FRONTEND_ROOT = path.join(__dirname, '..');
 app.use(express.static(FRONTEND_ROOT));
 app.get('/', (req, res) => res.sendFile(path.join(FRONTEND_ROOT, 'index.html')));
+
+// Email transporter
+let emailTransporter = null;
+if (EMAIL_USER && EMAIL_PASS) {
+  emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASS
+    }
+  });
+}
 
 let pool;
 
@@ -75,6 +93,10 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/builds', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ message: 'Database not available.' });
+    }
+
     const payload = req.body;
     if (!payload || !payload.components || !payload.stats) {
       return res.status(400).json({ message: 'Missing build payload.' });
@@ -108,6 +130,10 @@ app.post('/api/builds', async (req, res) => {
 
 app.get('/api/builds', async (req, res) => {
   try {
+    if (!pool) {
+      return res.status(503).json({ message: 'Database not available.' });
+    }
+
     const [rows] = await pool.query('SELECT id, created_at, summary, power_draw, battery_life, profile, selection_json FROM builds ORDER BY created_at DESC LIMIT 50');
     res.json(rows.map(row => ({ ...row, selection: JSON.parse(row.selection_json || '{}') })));
   } catch (error) {
@@ -116,14 +142,64 @@ app.get('/api/builds', async (req, res) => {
   }
 });
 
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { rating, category, mood, message, name, email, build } = req.body;
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ message: 'Message is required.' });
+    }
+
+    if (!emailTransporter) {
+      console.warn('Email not configured, feedback not sent.');
+      return res.status(500).json({ message: 'Email service not configured.' });
+    }
+
+    // Format the email
+    const subject = `SAMS Feedback: ${category || 'General'} - ${rating ? `${rating}/5 stars` : 'No rating'}`;
+
+    let html = `<h2>New Feedback Received</h2>
+<p><strong>From:</strong> ${name || 'Anonymous'} ${email ? `(${email})` : ''}</p>
+<p><strong>Rating:</strong> ${rating ? '★'.repeat(rating) + '☆'.repeat(5 - rating) : 'Not provided'}</p>
+<p><strong>Category:</strong> ${category || 'General'}</p>
+${mood ? `<p><strong>Mood:</strong> ${mood}</p>` : ''}
+<p><strong>Message:</strong></p>
+<p style="background: #f5f5f5; padding: 10px; border-left: 4px solid #ccc;">${message.replace(/\n/g, '<br>')}</p>`;
+
+    if (build) {
+      html += `<h3>Attached Build</h3><pre>${JSON.stringify(build, null, 2)}</pre>`;
+    }
+
+    html += `<p><em>Sent at ${new Date().toLocaleString()}</em></p>`;
+
+    const mailOptions = {
+      from: EMAIL_USER,
+      to: EMAIL_TO,
+      subject: subject,
+      html: html
+    };
+
+    await emailTransporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Feedback sent successfully.' });
+  } catch (error) {
+    console.error('POST /api/feedback error:', error);
+    res.status(500).json({ message: 'Unable to send feedback.', error: error.message });
+  }
+});
+
 initDatabase()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`SAMS backend listening on http://localhost:${PORT}`);
-      console.log(`Using MySQL ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}`);
-    });
+    console.log('Database initialized successfully.');
   })
   .catch(err => {
-    console.error('Database initialization failed:', err);
-    process.exit(1);
+    console.warn('Database initialization failed (continuing without DB):', err.message);
+    console.warn('Build saving will not work, but feedback emails will.');
+  })
+  .finally(() => {
+    app.listen(PORT, () => {
+      console.log(`SAMS backend listening on http://localhost:${PORT}`);
+      console.log(`Database: ${pool ? `Connected to MySQL ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}` : 'Not connected (build saving disabled)'}`);
+      console.log(`Email: ${emailTransporter ? 'Configured' : 'Not configured'}`);
+    });
   });
