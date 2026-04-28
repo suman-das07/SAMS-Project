@@ -452,10 +452,12 @@ function updateCompat(count, pow, batHrs) {
   const volt = SEL.bat ? (COMPONENTS.bat.find(x=>x.id===SEL.bat)?.volt||0) : 0;
   if (!volt || volt < 4.35) {
     icon='⚠️';msg='WARNING — Battery voltage incompatible!';bg='var(--amber2)';col='var(--amber)';
-  } else if (pow > 22) {
-    icon='🔴';msg='INCOMPATIBLE — Thermal overload detected';bg='var(--red2)';col='var(--red)';
-  } else if (pow > 16) {
-    icon='🟡';msg='VALID — High thermal load, monitor temps';bg='var(--amber2)';col='var(--amber)';
+  } else if (pow > 18) {
+    icon='🔴';msg='INCOMPATIBLE — Critical thermal overload';bg='var(--red2)';col='var(--red)';
+  } else if (pow > 14) {
+    icon='🟠';msg='INCOMPATIBLE — High thermal risk';bg='var(--red2)';col='var(--red)';
+  } else if (pow > 9) {
+    icon='🟡';msg='VALID — Moderate thermal load';bg='var(--amber2)';col='var(--amber)';
   } else {
     icon='🟢';msg='COMPATIBLE — Optimal configuration!';bg='var(--green2)';col='var(--green)';
   }
@@ -508,6 +510,23 @@ async function saveConfig() {
   const count = Object.values(SEL).filter(Boolean).length;
   if (count < 6) {
     showToast('⚠ Select all 6 components first');
+    return;
+  }
+
+  // Calculate total power to check thermal
+  const ids = Object.values(SEL).filter(Boolean);
+  let pow = 0;
+  ids.forEach(id => {
+    for (const cat in COMPONENTS) {
+      const c = COMPONENTS[cat].find(x=>x.id===id);
+      if (c) pow += c.power || 0;
+    }
+  });
+
+  // Thermal check: prevent save if thermal is HIGH
+  if (pow > 14) {
+    showToast('🔴 Cannot save build — High thermal risk detected');
+    alert('Build cannot be saved due to high thermal risk. Please select components with lower power consumption.');
     return;
   }
 
