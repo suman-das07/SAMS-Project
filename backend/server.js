@@ -61,6 +61,7 @@ async function initDatabase() {
     database: DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
+    multipleStatements: true,
   });
 
   const createTableSQL = `
@@ -74,6 +75,14 @@ async function initDatabase() {
       selection_json LONGTEXT NOT NULL,
       stats_json LONGTEXT NOT NULL,
       components_json LONGTEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS build_components (
+      build_id INT UNSIGNED NOT NULL,
+      category VARCHAR(20) NOT NULL,
+      component_id VARCHAR(50) NOT NULL,
+      component_name VARCHAR(255) NOT NULL,
+      PRIMARY KEY (build_id, category)
     );
   `;
 
@@ -92,6 +101,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.post('/api/builds', async (req, res) => {
+  
   try {
     if (!pool) {
       return res.status(503).json({ message: 'Database not available.' });
@@ -121,12 +131,28 @@ app.post('/api/builds', async (req, res) => {
       ]
     );
 
+    const buildId = result.insertId;
+    const compRows = Object.entries(payload.components).map(([category, comp]) => [
+      buildId,
+      category,
+      comp.id,
+      comp.name,
+    ]);
+
+    if (compRows.length > 0) {
+      await pool.query(
+        'INSERT INTO build_components (build_id, category, component_id, component_name) VALUES ?;',
+        [compRows]
+      );
+    }
+
     res.status(201).json({ id: result.insertId, message: 'Build saved successfully.' });
   } catch (error) {
     console.error('POST /api/builds error:', error);
     res.status(500).json({ message: 'Unable to save build.', error: error.message });
   }
 });
+
 
 app.get('/api/builds', async (req, res) => {
   try {

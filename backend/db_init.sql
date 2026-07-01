@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS builds (
   stats_json LONGTEXT NOT NULL,
   components_json LONGTEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS build_components (
+  build_id INT UNSIGNED NOT NULL,
+  category VARCHAR(20) NOT NULL,
+  component_id VARCHAR(50) NOT NULL,
+  component_name VARCHAR(255) NOT NULL,
+  PRIMARY KEY (build_id, category)
+);
